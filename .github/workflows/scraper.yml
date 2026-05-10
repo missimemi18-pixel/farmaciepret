@@ -1,0 +1,37 @@
+name: Scraper Farmacii
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+    - cron: '0 18 * * *'
+  workflow_dispatch:
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests beautifulsoup4 python-dotenv
+      
+      - name: Run Catena scraper
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        run: python scraper/catena.py
+      
+      - name: Commit changes
+        run: |
+          git config --local user.email "scraper@farmaciepret.ro"
+          git config --local user.name "Bot Scraper"
+          git add -A
+          git commit -m "Auto: Update produse $(date +%Y-%m-%d)" || true
+          git push
