@@ -1,12 +1,12 @@
 import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  'https://flzmjecipfzurnkunyku.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZsem1qZWNpcGZ6dXJua3VueWt1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MTU1NzQsImV4cCI6MjA5Mzk5MTU3NH0.D_bztbWV6gV57Z8ZDZOTILM2g_Tky-ybSQzIyKv6SJU'
 )
 
 async function getProduse() {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('products')
     .select(`
       *,
@@ -18,6 +18,9 @@ async function getProduse() {
         pharmacies ( name, color )
       )
     `)
+  
+  console.log('Produse:', JSON.stringify(data))
+  console.log('Eroare:', JSON.stringify(error))
   return data || []
 }
 
@@ -46,11 +49,15 @@ export default async function Home() {
         <span style={{fontSize: '12px', color: '#666'}}>💰 Economie medie <strong>23%</strong></span>
       </div>
 
+      <div style={{padding: '1rem', background: '#fff', margin: '1rem', borderRadius: '8px', border: '1px solid #eee', fontSize: '12px', color: '#666'}}>
+        Debug: {produse.length} produse găsite
+      </div>
+
       <div style={{padding: '1.5rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '12px'}}>
         {produse.map((produs: any) => {
           const preturi = produs.listings || []
-          const pretMin = Math.min(...preturi.map((l: any) => l.price))
-          const pretMax = Math.max(...preturi.map((l: any) => l.price))
+          const pretMin = preturi.length > 0 ? Math.min(...preturi.map((l: any) => l.price)) : 0
+          const pretMax = preturi.length > 0 ? Math.max(...preturi.map((l: any) => l.price)) : 0
           return (
             <div key={produs.id} style={{background: '#fff', border: '1px solid #eee', borderRadius: '12px', padding: '14px'}}>
               <img src={produs.image_url} alt={produs.name} style={{width: '100%', height: '80px', objectFit: 'contain', marginBottom: '8px'}} />
