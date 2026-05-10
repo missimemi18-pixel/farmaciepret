@@ -3,7 +3,6 @@ export default function Home() {
     <main style={{fontFamily: 'system-ui, sans-serif', maxWidth: '1200px', margin: '0 auto', padding: '0'}}>
       <nav style={{background: '#fff', borderBottom: '1px solid #eee', padding: '0 1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', height: '52px'}}>
         <div style={{fontSize: '17px', fontWeight: '500', color: '#0F6E56'}}>farmacie<span style={{color: '#000'}}>pret</span>.ro</div>
-        <input type="text" placeholder="Caută medicament, supliment, brand..." style={{flex: 1, maxWidth: '460px', padding: '7px 12px', border: '1px solid #ddd', borderRadius: '8px', fontSize: '13px'}} />
       </nav>
 
       <div style={{background: '#E1F5EE', padding: '1.5rem', borderBottom: '1px solid #9FE1CB'}}>
