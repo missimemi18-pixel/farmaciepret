@@ -49,11 +49,15 @@ export default function Home() {
 
   function handleCautare() { getProduse(cautare) }
   function handleKeyDown(e: any) { if (e.key === 'Enter') handleCautare() }
+  function resetCautare() {
+    setCautare('')
+    getProduse('')
+  }
 
   return (
     <main style={{fontFamily: 'system-ui, sans-serif', maxWidth: '1200px', margin: '0 auto'}}>
       <nav style={{background: '#fff', borderBottom: '1px solid #eee', padding: '0 1.5rem', display: 'flex', alignItems: 'center', height: '52px'}}>
-        <div style={{fontSize: '17px', fontWeight: '500', color: '#0F6E56'}}>farmacie<span style={{color: '#000'}}>pret</span>.ro</div>
+        <a href="/" style={{fontSize: '17px', fontWeight: '500', color: '#0F6E56', textDecoration: 'none'}}>farmacie<span style={{color: '#000'}}>pret</span>.ro</a>
       </nav>
 
       <div style={{background: '#E1F5EE', padding: '1.5rem', borderBottom: '1px solid #9FE1CB'}}>
@@ -72,6 +76,12 @@ export default function Home() {
             onClick={handleCautare}
             style={{padding: '10px 20px', background: '#0F6E56', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '500', cursor: 'pointer'}}
           >Cauta</button>
+          {cautare && (
+            <button
+              onClick={resetCautare}
+              style={{padding: '10px 16px', background: '#fff', color: '#0F6E56', border: '1px solid #5DCAA5', borderRadius: '8px', fontSize: '13px', cursor: 'pointer'}}
+            >Resetare</button>
+          )}
         </div>
       </div>
 
