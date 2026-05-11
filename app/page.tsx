@@ -54,6 +54,12 @@ export default function Home() {
     getProduse('')
   }
 
+  function getColor(price: number, min: number, max: number) {
+    if (price === min) return '#0F6E56'
+    if (price === max && min !== max) return '#A32D2D'
+    return '#333'
+  }
+
   return (
     <main style={{fontFamily: 'system-ui, sans-serif', maxWidth: '1200px', margin: '0 auto'}}>
       <nav style={{background: '#fff', borderBottom: '1px solid #eee', padding: '0 1.5rem', display: 'flex', alignItems: 'center', height: '52px'}}>
@@ -123,8 +129,11 @@ export default function Home() {
                       <div style={{borderTop: '1px solid #eee', paddingTop: '8px'}}>
                         {preturi.slice(0, 4).map((listing: any, idx: number) => (
                           <div key={idx} style={{display: 'flex', justifyContent: 'space-between', fontSize: '11px', padding: '2px 0'}}>
-                            <span style={{color: '#666'}}>{listing.pharmacies?.name}</span>
-                            <span style={{fontWeight: listing.price === pretMin ? '600' : '400', color: listing.price === pretMin ? '#0F6E56' : '#333'}}>
+                            <span style={{color: '#666', display: 'flex', alignItems: 'center', gap: '4px'}}>
+                              <span style={{width: '6px', height: '6px', borderRadius: '50%', background: listing.pharmacies?.color, display: 'inline-block'}}></span>
+                              {listing.pharmacies?.name}
+                            </span>
+                            <span style={{fontWeight: listing.price === pretMin ? '600' : '400', color: getColor(listing.price, pretMin, pretMax)}}>
                               {listing.price.toFixed(2)} lei
                             </span>
                           </div>
