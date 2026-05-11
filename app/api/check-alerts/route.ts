@@ -10,14 +10,17 @@ const supabase = createClient(
 const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function GET(request: Request) {
-  // Securitate: verifica secret pentru cron
+  // Securitate
+  const url = new URL(request.url)
+  const secretFromUrl = url.searchParams.get('secret')
   const authHeader = request.headers.get('authorization')
-  if (authHeader !== 'Bearer ' + process.env.CRON_SECRET) {
+  const validAuth = authHeader === 'Bearer ' + process.env.CRON_SECRET
+  const validSecret = secretFromUrl === process.env.CRON_SECRET
+  if (!validAuth && !validSecret) {
     return new NextResponse('Unauthorized', { status: 401 })
   }
 
   try {
-    // Ia toate alertele active
     const { data: alerte } = await supabase
       .from('price_alerts')
       .select('id, user_email, target_price, product_id, products (name, listings (price))')
@@ -37,7 +40,6 @@ export async function GET(request: Request) {
       const preturi = produs.listings.map((l: any) => l.price)
       const pretMin = Math.min(...preturi)
 
-      // Daca pretul curent e sub pretul tinta -> trimite email
       if (pretMin <= alerta.target_price) {
         try {
           await resend.emails.send({
@@ -54,7 +56,6 @@ export async function GET(request: Request) {
               '<p style="font-size:12px;color:#888;">Acest email a fost trimis pentru ca ai setat o alerta pe farmaciepret.ro</p>'
           })
 
-          // Dezactiveaza alerta (sa nu mai trimita iar)
           await supabase
             .from('price_alerts')
             .update({ active: false })
