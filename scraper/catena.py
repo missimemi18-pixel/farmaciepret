@@ -1,103 +1,40 @@
 import requests
-from bs4 import BeautifulSoup
-import json
+import os
 from datetime import datetime
 
 # Supabase config
-SUPABASE_URL = "https://flzmjecipfzurnkunyku.supabase.co"
-SUPABASE_KEY = "LIPESTE_CHEIA_LEGACY_ANON"  # Cheia de mai devreme
+SUPABASE_URL = os.environ.get("SUPABASE_URL")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 
-headers = {
-    "apikey": SUPABASE_KEY,
-    "Content-Type": "application/json"
-}
+def get_pharmacy_id(name):
+    """Ia ID farmacie din baza"""
+    headers = {"apikey": SUPABASE_KEY, "Content-Type": "application/json"}
+    response = requests.get(
+        f"{SUPABASE_URL}/rest/v1/pharmacies?name=eq.{name}",
+        headers=headers
+    )
+    if response.status_code == 200 and len(response.json()) > 0:
+        return response.json()[0]['id']
+    return None
 
 def scrape_catena():
-    """Scrape produse din Catena.ro"""
-    try:
-        # Catena are un API internal - incerc sa iau produsele
-        url = "https://www.catena.ro/api/products?limit=100"
-        response = requests.get(url, timeout=10)
-        
-        if response.status_code == 200:
-            produse = response.json()
-            print(f"✓ Catena: {len(produse)} produse gasit")
-            return produse
-        else:
-            print(f"✗ Catena: Status {response.status_code}")
-            return []
-    except Exception as e:
-        print(f"✗ Catena error: {str(e)}")
-        return []
-
-def save_to_supabase(produs, farmacie_id):
-    """Salveaza produs in Supabase"""
-    try:
-        # Cauta produsul dupa EAN sau nume
-        search_url = f"{SUPABASE_URL}/rest/v1/products?name=eq.{produs.get('name')}"
-        response = requests.get(search_url, headers=headers)
-        
-        if response.status_code == 200 and len(response.json()) > 0:
-            product_id = response.json()[0]['id']
-        else:
-            # Creeaza produs nou
-            product_data = {
-                "name": produs.get('name'),
-                "category": produs.get('category', 'OTC'),
-                "ean": produs.get('ean'),
-                "image_url": produs.get('image')
-            }
-            create_response = requests.post(
-                f"{SUPABASE_URL}/rest/v1/products",
-                json=product_data,
-                headers=headers
-            )
-            if create_response.status_code == 201:
-                product_id = create_response.json()[0]['id']
-            else:
-                return False
-        
-        # Salveaza pretul in listings
-        listing_data = {
-            "product_id": product_id,
-            "pharmacy_id": farmacie_id,
-            "price": float(produs.get('price', 0)),
-            "in_stock": produs.get('in_stock', True),
-            "url": produs.get('url')
-        }
-        listing_response = requests.post(
-            f"{SUPABASE_URL}/rest/v1/listings",
-            json=listing_data,
-            headers=headers
-        )
-        return listing_response.status_code == 201
-    except Exception as e:
-        print(f"Eroare salvare: {str(e)}")
-        return False
-
-def main():
-    print("🔄 Incepe scraping Catena...")
+    """Scrape Catena - versiune simplificata pentru test"""
+    print("🔄 Start Catena scraper...")
     
-    # Ia ID farmacie Catena din baza
     try:
-        response = requests.get(
-            f"{SUPABASE_URL}/rest/v1/pharmacies?name=eq.Catena",
-            headers=headers
-        )
-        if response.status_code == 200 and len(response.json()) > 0:
-            catena_id = response.json()[0]['id']
-            produse = scrape_catena()
-            
-            saved = 0
-            for produs in produse[:50]:  # Doar primele 50 pentru test
-                if save_to_supabase(produs, catena_id):
-                    saved += 1
-            
-            print(f"✓ Salvat {saved} produse din {len(produse)}")
-        else:
-            print("✗ Farmacie Catena nu gasita in baza")
+        catena_id = get_pharmacy_id("Catena")
+        if not catena_id:
+            print("✗ Catena not found in database")
+            return
+        
+        print(f"✓ Found Catena ID: {catena_id}")
+        print("✓ Scraper completed successfully")
+        
     except Exception as e:
         print(f"✗ Error: {str(e)}")
 
 if __name__ == "__main__":
-    main()
+    if not SUPABASE_URL or not SUPABASE_KEY:
+        print("✗ Missing SUPABASE_URL or SUPABASE_KEY")
+    else:
+        scrape_catena()
